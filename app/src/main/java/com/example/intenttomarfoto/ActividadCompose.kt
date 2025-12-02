@@ -1,11 +1,14 @@
 package com.example.intenttomarfoto
 
+import android.Manifest
 import android.content.ContentValues
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -34,6 +37,7 @@ import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.example.intenttomarfoto.ui.theme.IntentTomarFotoTheme
 
 class ActividadCompose : ComponentActivity() {
@@ -58,7 +62,14 @@ fun TomarFoto(modificador: Modifier) {
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
 
-    
+    // Launcher para solicitar permiso de cámara
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (!granted) {
+            Toast.makeText(context, "Permiso de cámara denegado", Toast.LENGTH_SHORT).show()
+        }
+    }
     // Launcher que usa TakePicture
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
@@ -88,25 +99,36 @@ fun TomarFoto(modificador: Modifier) {
         Spacer(modifier = Modifier.height(20.dp))
 
         Button(onClick = {
-            // 1. Crear un Uri en MediaStore
-            val values = ContentValues().apply {
-                put(MediaStore.Images.Media.DISPLAY_NAME, "foto_${System.currentTimeMillis()}.jpg")
-                put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraCompose")
+            //Preguntamos si concedemos el permiso de uso de la camara
+            if(ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==PackageManager.PERMISSION_GRANTED) {
+                // 1. Crear un Uri en MediaStore
+                val values = ContentValues().apply {
+                    put(
+                        MediaStore.Images.Media.DISPLAY_NAME,
+                        "foto_${System.currentTimeMillis()}.jpg"
+                    )
+                    put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                    put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraCompose")
+                }
+
+                val uri = context.contentResolver.insert(
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    values
+                )
+
+
+                // 2. Lanzar TakePicture()
+                uri?.let {
+                    imageUri = uri
+                    launcher.launch(uri)
+                }
+            }
+            else
+            {
+                // Solicitar permiso
+                permissionLauncher.launch(Manifest.permission.CAMERA)
             }
 
-            val uri = context.contentResolver.insert(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                values
-            )
-
-
-
-            // 2. Lanzar TakePicture()
-            uri?.let {
-                imageUri = uri
-                launcher.launch(uri)
-            }
 
         }) {
             Text("Tomar foto")
