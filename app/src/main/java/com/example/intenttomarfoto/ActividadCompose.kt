@@ -57,6 +57,7 @@ class ActividadCompose : ComponentActivity() {
 
 @Composable
 fun TomarFoto(modificador: Modifier) {
+    //Obtenemos el contexto que lo usamos en un Toast
     val context = LocalContext.current
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }
@@ -70,13 +71,17 @@ fun TomarFoto(modificador: Modifier) {
             Toast.makeText(context, "Permiso de cámara denegado", Toast.LENGTH_SHORT).show()
         }
     }
-    // Launcher que usa TakePicture
+    // Launcher que usa TakePicture, guarda la imagen en la URI input
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { exito ->
+        //Devuelve true si se obtuvo la imagen correctamente y realmente
+        //se almacena en la uri que se creo
         if (exito && imageUri != null) {
             // Convertir Uri → Bitmap
             bitmap = BitmapFactory.decodeStream(
+                //Abre el  fichero con la uri que se genero, mediante el método
+                //contenResolver y se convierte a un bitmap
                 context.contentResolver.openInputStream(imageUri!!)
             )
         }
@@ -87,7 +92,7 @@ fun TomarFoto(modificador: Modifier) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
+        //Cuando
         bitmap?.let {
             Image(
                 bitmap = it.asImageBitmap(),
@@ -101,16 +106,26 @@ fun TomarFoto(modificador: Modifier) {
         Button(onClick = {
             //Preguntamos si concedemos el permiso de uso de la camara
             if(ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==PackageManager.PERMISSION_GRANTED) {
-                // 1. Crear un Uri en MediaStore
+                // 1. Crear un Uri en el Proveedor de contenidos MediaStore.Images.Media
+                //Como indica la doc. oficial, https://developer.android.com/guide/topics/providers/content-provider-basics?hl=es-419#ClientProvider
+                //para acceder a un proveedor de contenidos para añadir un registro, será necesario un ContentValues
+                //es una especie de mapa (clave, valor), indicando los valores de los campos a añadir
+                
+
                 val values = ContentValues().apply {
-                    put(
+                    put(//El nombre del fichero imagen
                         MediaStore.Images.Media.DISPLAY_NAME,
                         "foto_${System.currentTimeMillis()}.jpg"
                     )
+                    //El tipo de fichero
                     put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                    //La ubicación relativa sobre la zona donde almacena los ficheros media el dispositivo
                     put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraCompose")
                 }
 
+                //Se accede al proveedor de contenidos para añadir un registro
+                // en la tabla correspondiente y generar una uri
+                // que se usará para guardar la foto
                 val uri = context.contentResolver.insert(
                     MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                     values
