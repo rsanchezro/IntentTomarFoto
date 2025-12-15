@@ -110,7 +110,9 @@ fun TomarFoto(modificador: Modifier) {
                 //Como indica la doc. oficial, https://developer.android.com/guide/topics/providers/content-provider-basics?hl=es-419#ClientProvider
                 //para acceder a un proveedor de contenidos para añadir un registro, será necesario un ContentValues
                 //es una especie de mapa (clave, valor), indicando los valores de los campos a añadir
-                
+
+                //Las columnas de este proveedor de contenidos MediaStore.Images.Media
+                //se definen https://developer.android.com/reference/android/provider/MediaStore.MediaColumns
 
                 val values = ContentValues().apply {
                     put(//El nombre del fichero imagen
@@ -124,7 +126,7 @@ fun TomarFoto(modificador: Modifier) {
                 }
 
                 //Se accede al proveedor de contenidos para añadir un registro
-                // en la tabla correspondiente y generar una uri
+                // en la tabla correspondiente (dispositivo externo) y generar una uri
                 // que se usará para guardar la foto
                 val uri = context.contentResolver.insert(
                     MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
@@ -140,7 +142,7 @@ fun TomarFoto(modificador: Modifier) {
             }
             else
             {
-                // Solicitar permiso
+                // Solicitar permiso si no lo tengo concedido
                 permissionLauncher.launch(Manifest.permission.CAMERA)
             }
 
