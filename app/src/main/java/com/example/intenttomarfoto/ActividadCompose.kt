@@ -107,6 +107,9 @@ fun TomarFoto(modificador: Modifier) {
             //Preguntamos si concedemos el permiso de uso de la camara
             if(ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==PackageManager.PERMISSION_GRANTED) {
                 // 1. Crear un Uri en el Proveedor de contenidos MediaStore.Images.Media
+                //Un proveedor de contenidos es un mecanismo para compartir datos entre aplicaciones
+                //Existen proveedores de contenidos definidos por el sistema operativo para acceder
+                //a información del sistema (contactos, files, etc..)
                 //Como indica la doc. oficial, https://developer.android.com/guide/topics/providers/content-provider-basics?hl=es-419#ClientProvider
                 //para acceder a un proveedor de contenidos para añadir un registro, será necesario un ContentValues
                 //es una especie de mapa (clave, valor), indicando los valores de los campos a añadir
