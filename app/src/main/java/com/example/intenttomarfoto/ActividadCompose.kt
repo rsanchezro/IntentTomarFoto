@@ -2,6 +2,7 @@ package com.example.intenttomarfoto
 
 import android.Manifest
 import android.content.ContentValues
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -59,6 +60,11 @@ class ActividadCompose : ComponentActivity() {
 fun TomarFoto(modificador: Modifier) {
     //Obtenemos el contexto que lo usamos en un Toast
     val context = LocalContext.current
+    //Para comprobar si existe una app que abre la camara
+    val cameraAvailable = remember {
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        intent.resolveActivity(context.packageManager) != null
+    }
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
@@ -140,7 +146,9 @@ fun TomarFoto(modificador: Modifier) {
                 // 2. Lanzar TakePicture()
                 uri?.let {
                     imageUri = uri
-                    launcher.launch(uri)
+                    if(cameraAvailable)
+                      //Solo lanzo si existe en mi sistema una camara disponible
+                         launcher.launch(uri)
                 }
             }
             else
