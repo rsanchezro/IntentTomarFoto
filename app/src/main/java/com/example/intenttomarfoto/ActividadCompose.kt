@@ -1,6 +1,7 @@
 package com.example.intenttomarfoto
 
 import android.Manifest
+import android.app.Activity
 import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -38,6 +40,7 @@ import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import androidx.core.content.ContextCompat
 import com.example.intenttomarfoto.ui.theme.IntentTomarFotoTheme
 
@@ -60,11 +63,16 @@ class ActividadCompose : ComponentActivity() {
 fun TomarFoto(modificador: Modifier) {
     //Obtenemos el contexto que lo usamos en un Toast
     val context = LocalContext.current
+    val actividad=context as? ComponentActivity
+    var mostrar_dialogo by remember { mutableStateOf(false) }
+    val mostrar_mensajepermiso=actividad?.let {
+        shouldShowRequestPermissionRationale(it, Manifest.permission.CAMERA)
+    }?:false
     //Para comprobar si existe una app que abre la camara
-    val cameraAvailable = remember {
+  /*  val cameraAvailable = remember {
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         intent.resolveActivity(context.packageManager) != null
-    }
+    } */
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
@@ -146,10 +154,14 @@ fun TomarFoto(modificador: Modifier) {
                 // 2. Lanzar TakePicture()
                 uri?.let {
                     imageUri = uri
-                    if(cameraAvailable)
+
                       //Solo lanzo si existe en mi sistema una camara disponible
                          launcher.launch(uri)
                 }
+            }
+            else if( mostrar_mensajepermiso)
+            { // Ya he solicitado el permiso en algún momento y dije que no
+                mostrar_dialogo=true
             }
             else
             {
@@ -160,6 +172,28 @@ fun TomarFoto(modificador: Modifier) {
 
         }) {
             Text("Tomar foto")
+        }
+
+        //dije que no a la concesión del permiso
+        if (mostrar_dialogo) {
+            AlertDialog(
+                onDismissRequest = { mostrar_dialogo = false },
+                title = { Text("Permiso requerido") },
+                text = { Text("La cámara es necesaria para tomar fotos dentro de la app.") },
+                confirmButton = {
+                    Button(onClick = {
+                        permissionLauncher.launch(Manifest.permission.CAMERA)
+                        mostrar_dialogo = false
+                    }) {
+                        Text("Aceptar")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = { mostrar_dialogo = false }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
         }
     }
 }
