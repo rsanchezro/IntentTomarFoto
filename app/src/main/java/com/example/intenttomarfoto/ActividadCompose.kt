@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -65,14 +66,8 @@ fun TomarFoto(modificador: Modifier) {
     val context = LocalContext.current
     val actividad=context as? ComponentActivity
     var mostrar_dialogo by remember { mutableStateOf(false) }
-    val mostrar_mensajepermiso=actividad?.let {
-        shouldShowRequestPermissionRationale(it, Manifest.permission.CAMERA)
-    }?:false
-    //Para comprobar si existe una app que abre la camara
-  /*  val cameraAvailable = remember {
-        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        intent.resolveActivity(context.packageManager) != null
-    } */
+
+
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
@@ -118,6 +113,10 @@ fun TomarFoto(modificador: Modifier) {
         Spacer(modifier = Modifier.height(20.dp))
 
         Button(onClick = {
+            val mostrar_mensajepermiso=actividad?.let {
+                shouldShowRequestPermissionRationale(it, Manifest.permission.CAMERA)
+            }?:false
+            Log.i("INFO","El valor de mostrar mensaje es $mostrar_mensajepermiso")
             //Preguntamos si concedemos el permiso de uso de la camara
             if(ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==PackageManager.PERMISSION_GRANTED) {
                 // 1. Crear un Uri en el Proveedor de contenidos MediaStore.Images.Media
@@ -155,8 +154,10 @@ fun TomarFoto(modificador: Modifier) {
                 uri?.let {
                     imageUri = uri
 
-                      //Solo lanzo si existe en mi sistema una camara disponible
+
+
                          launcher.launch(uri)
+
                 }
             }
             else if( mostrar_mensajepermiso)
@@ -165,6 +166,7 @@ fun TomarFoto(modificador: Modifier) {
             }
             else
             {
+                Log.i("INFO","Se mete por el else")
                 // Solicitar permiso si no lo tengo concedido
                 permissionLauncher.launch(Manifest.permission.CAMERA)
             }
