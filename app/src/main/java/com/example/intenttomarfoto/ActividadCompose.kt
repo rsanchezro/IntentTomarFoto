@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import com.example.intenttomarfoto.ui.theme.IntentTomarFotoTheme
 
 class ActividadCompose : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -58,7 +59,8 @@ fun TomarFoto(modificador: Modifier) {
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
 
-    
+
+
     // Launcher que usa TakePicture
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
